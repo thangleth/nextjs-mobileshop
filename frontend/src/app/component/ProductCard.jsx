@@ -9,7 +9,7 @@ function ProductCard(props) {
                 return (
                     <div key={_id} className="col-lg-3 text-center">
                         <div className="card border-0 bg-light mb-3">
-                            <Link href={`/chitietsanpham/${_id}`} className="mt-2" >
+                            <Link href={`/sanphamchitiet/${_id}`} className="mt-2" >
                                 <div className="card-body">
                                     <img src={`http://localhost:3003/img/${image}`} className="img-fluid" />
                                 </div>
