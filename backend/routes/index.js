@@ -235,17 +235,18 @@ router.post('/addCategory', upload.single('image'), async (req, res, next) => {
 
 
 const bcrypt = require('bcryptjs');
-router.post('/register', async (req, res, next) => {
+router.post('/register', upload.single('avatar'), async (req, res, next) => {
   const db = await connectDb();
   const userCollection = db.collection('users');
-  const { email, password } = req.body;
+  const { email, password, phone, address } = req.body;
+  const avatar = req.file ? req.file.filename : null;
 
   const user = await userCollection.findOne({ email });
   if (user) {
     return res.status(400).json({ message: "Email đã tồn tại" });
   } else {
     const hashPassword = await bcrypt.hash(password, 10);
-    const newUser = { email, password: hashPassword, role: 'user' };
+    const newUser = { email, password: hashPassword, avatar, phone, address, role: 'user' };
 
     try {
       const result = await userCollection.insertOne(newUser);
@@ -262,6 +263,63 @@ router.post('/register', async (req, res, next) => {
 
 });
 
+router.get('/users', async (req, res, next) => {
+  const db = await connectDb();
+  const userCollection = db.collection('users');
+  const users = await userCollection.find().toArray();
+  if (users) {
+    res.status(200).json(users);
+  } else {
+    res.status(404).json({ message: "Không tìm thấy" })
+  }
+});
+
+const jwt = require('jsonwebtoken');
+router.post('/login', async (req, res, next) => {
+  const db = await connectDb();
+  const userCollection = db.collection('users');
+  const { email, password } = req.body;
+  const user = await userCollection.findOne({ email });
+  if (!user) {
+    return res.status(404).json({ message: "Email không tồn tại" });
+  }
+  const match = await bcrypt.compare(password, user.password);
+  if (!match) {
+    return res.status(400).json({ message: "Mật khẩu không chính xác" });
+  }
+  const token = jwt.sign({ email: user.email, role: user.role }, 'secret', { expiresIn: '1h' });
+  res.status(200).json({ token });
+});
 
 
+//Kiểm tra token qua Bearer
+router.get('/checktoken', async (req, res, next) => {
+  const token = req.headers.authorization.split(' ')[1];
+  jwt.verify(token, 'secret', (err, user) => {
+    if (err) {
+      return res.status(401).json({ message: "Token không hợp lệ" });
+    }
+    res.status(200).json({ message: "Token hợp lệ" });
+  }
+  );
+}
+);
+
+//lấy thông tin chi tiết user qua token
+router.get('/detailuser', async (req, res, next) => {
+  const token = req.headers.authorization.split(' ')[1];
+  jwt.verify(token, 'secret', async (err, user) => {
+    if (err) {
+      return res.status(401).json({ message: "Token không hợp lệ" });
+    }
+    const db = await connectDb();
+    const userCollection = db.collection('users');
+    const userInfo = await userCollection.findOne({ email: user.email });
+    if (userInfo) {
+      res.status(200).json(userInfo);
+    } else {
+      res.status(404).json({ message: "Không tìm thấy user" });
+    }
+  });
+});
 module.exports = router;

@@ -90,6 +90,14 @@ const Layout = ({ children }) => {
                             </Link>
                         </li>
                     </ul>
+                    <ul className="sidebar-nav">
+                        <li className="sidebar-item">
+                            <Link href="/nguoidung" className="sidebar-link">
+                                <i className="fa-solid fa-list pe-2"></i>
+                                User
+                            </Link>
+                        </li>
+                    </ul>
                 </div>
             </aside>
             <div className="main">

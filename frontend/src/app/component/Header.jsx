@@ -1,10 +1,19 @@
 "use client";
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+
 
 const Header = () => {
     const cartItems = useSelector((state) => state.cart.items);
     const cartCount = cartItems.reduce((count, item) => count + Number(item.quantity), 0);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    useEffect(() => {
+        const token = document.cookie.split(';').find((c) => c.trim().startsWith('token='));
+        if (token) {
+            setIsLoggedIn(true);
+        }
+    }, []);
     return (
         <nav className="navbar navbar-expand-lg">
             <div className="container">
@@ -39,6 +48,11 @@ const Header = () => {
                         <span id="amount-cart" className="text-white position-absolute top-0 start-75 translate-middle bg-success px-2 rounded-circle">
                             {cartCount}
                         </span>
+                    </div>
+                    <div id="account" class="d-flex justify-content-center align-items-center rounded-circle bg-black bg-opacity-10  mx-2 px-2 py-1">
+                        <Link href={isLoggedIn ? '/info' : '/dangnhap'}>
+                            <i class={isLoggedIn ? "bi bi-person fs-5  fw-bolder text-dark" : "bi bi-box-arrow-in-right fs-5  fw-bolder text-dark"} />
+                        </Link>
                     </div>
                 </div>
             </div>
