@@ -1,5 +1,7 @@
 const express = require('express');
 var router = express.Router();
+const upload = require('../middleware/upload')
+
 router.use(express.json()); // Để phân tích dữ liệu JSON
 router.use(express.urlencoded({ extended: true }));
 
@@ -76,26 +78,6 @@ router.get('/hot', async (req, res, next) => {
     next(error); // Gọi middleware xử lý lỗi của Express
   }
 });
-
-const multer = require('multer');
-//Thiết lập nơi lưu trữ và tên file
-let storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, './public/img')
-  },
-  filename: function (req, file, cb) {
-    cb(null, file.originalname)
-  }
-})
-//Kiểm tra file upload
-function checkFileUpLoad(req, file, cb) {
-  if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
-    return cb(new Error('Bạn chỉ được upload file ảnh'));
-  }
-  cb(null, true);
-}
-//Upload file
-let upload = multer({ storage: storage, fileFilter: checkFileUpLoad });
 
 //Thêm sản phẩm
 router.post('/addproduct', upload.single('image'), async (req, res, next) => {
